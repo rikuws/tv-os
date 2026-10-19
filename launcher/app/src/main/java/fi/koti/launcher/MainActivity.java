@@ -64,7 +64,8 @@ public class MainActivity extends Activity implements Sidebar.Listener {
     private final int[] lastIndex = {0, 0};
     private int focusRow = ROW_DOCK;
 
-    private static final float DIM_ROWMATE = 0.22f, DIM_DOCK_IDLE = 0.30f, DIM_POSTER_IDLE = 0.34f;
+    // tvOS keeps unfocused content at full brightness; focus is lift, shadow and sheen.
+    private static final float DIM_ROWMATE = 0f, DIM_DOCK_IDLE = 0f, DIM_POSTER_IDLE = 0f;
     private static final int CONTINUE_LIMIT = 12;
     /** Dock focus must rest this long before the backdrop changes art. */
     private static final int ART_DELAY_MS = 220;
@@ -106,8 +107,8 @@ public class MainActivity extends Activity implements Sidebar.Listener {
         float d = getResources().getDisplayMetrics().density;
         tileW = Math.round(160 * d);
         tileH = Math.round(90 * d);
-        posterW = Math.round(148 * d);
-        posterH = Math.round(83 * d);
+        posterW = Math.round(156 * d);
+        posterH = Math.round(88 * d);
         screenW = getResources().getDisplayMetrics().widthPixels;
 
         prefs = new Prefs(this);
@@ -214,6 +215,10 @@ public class MainActivity extends Activity implements Sidebar.Listener {
     /** ADB configuration: --es dock "pkg1,pkg2", --ez reset_dock true, --ez unhide_all true. */
     private boolean handleIntent(Intent intent) {
         if (intent == null) return false;
+        if (intent.getBooleanExtra("speaker_test", false)) {
+            intent.removeExtra("speaker_test");
+            if (KotiApp.speaker() != null) KotiApp.speaker().testDisconnectAndRecover();
+        }
         if (intent.getBooleanExtra("unhide_all", false)) {
             intent.removeExtra("unhide_all");
             prefs.clearHidden();
@@ -640,14 +645,20 @@ public class MainActivity extends Activity implements Sidebar.Listener {
     private void moveRow(int delta) {
         int r = focusRow + delta;
         while (r >= ROW_DOCK && r <= ROW_CONTINUE && !rowVisible(r)) r += delta;
-        if (r < ROW_DOCK || r > ROW_CONTINUE) return;    // edges never fall through
+        if (r < ROW_DOCK || r > ROW_CONTINUE) { nudge(0, delta); return; }  // edges never fall through
         focusRow(r, lastIndex[r]);
     }
 
     private void moveInRow(int delta) {
         int i = lastIndex[focusRow] + delta;
-        if (i < 0 || i >= rowSize(focusRow)) return;     // row ends are walls
+        if (i < 0 || i >= rowSize(focusRow)) { nudge(delta, 0); return; }  // row ends are walls
         focusRow(focusRow, i);
+    }
+
+    /** A press against a wall: the focused tile nudges that way, so the edge is felt. */
+    private void nudge(int dx, int dy) {
+        View f = getCurrentFocus();
+        if (f instanceof FocusFx.Host) ((FocusFx.Host) f).nudge(dx, dy);
     }
 
     private void focusRow(int row, int index) {
@@ -751,19 +762,20 @@ public class MainActivity extends Activity implements Sidebar.Listener {
         }
     }
 
+    /** "K2, J16 · 12 min jäljellä": episode code if any, then what's next or whose show. */
     private String subtitleFor(WatchNextRepository.Item it) {
         String status = null;
         if (it.watchNextType == android.media.tv.TvContract.WatchNextPrograms.WATCH_NEXT_TYPE_NEXT) {
             status = getString(R.string.wn_next);
-        } else if (it.watchNextType == android.media.tv.TvContract.WatchNextPrograms.WATCH_NEXT_TYPE_NEW) {
-            status = getString(R.string.wn_new);
         } else if (it.minutesLeft > 0) {
             status = getString(R.string.wn_left, it.minutesLeft);
         }
-        // One short fact fits under a card: what's next if known, else whose show it is.
-        if (status != null) return status;
-        AppEntry app = apps.get(it.packageName);
-        return app != null ? app.label : null;
+        if (status == null) {               // "Uusi" is a badge on the card, not a subtitle
+            AppEntry app = apps.get(it.packageName);
+            status = app != null ? app.label : null;
+        }
+        if (it.seasonEpisode == null) return status;
+        return status == null ? it.seasonEpisode : it.seasonEpisode + "  ·  " + status;
     }
 
     private final class ContinueAdapter extends RecyclerView.Adapter<CardHolder> {
@@ -793,7 +805,7 @@ public class MainActivity extends Activity implements Sidebar.Listener {
             root.setLayoutParams(new RecyclerView.LayoutParams(posterW, ViewGroup.LayoutParams.WRAP_CONTENT));
             PosterTileView tile = new PosterTileView(c);
             root.addView(tile, new LinearLayout.LayoutParams(posterW, posterH));
-            TextView title = label(c, 14, Type.SEMIBOLD, Palette.TEXT);
+            TextView title = label(c, 14, Type.MEDIUM, Palette.TEXT);
             LinearLayout.LayoutParams tlp = new LinearLayout.LayoutParams(-1, -2);
             tlp.topMargin = px(10);
             root.addView(title, tlp);
@@ -818,7 +830,9 @@ public class MainActivity extends Activity implements Sidebar.Listener {
         @Override public void onBindViewHolder(CardHolder h, int position) {
             WatchNextRepository.Item it = items.get(position);
             AppEntry app = apps.get(it.packageName);
-            h.tile.bind(app != null ? app.icon : null, it.progress, it.title);
+            boolean isNew = it.watchNextType == android.media.tv.TvContract.WatchNextPrograms.WATCH_NEXT_TYPE_NEW;
+            h.tile.bind(app != null ? app.icon : null, it.progress,
+                    isNew ? getString(R.string.wn_badge_new) : null, it.title);
             h.title.setText(it.title);
             String sub = subtitleFor(it);
             h.sub.setText(sub == null ? "" : sub);

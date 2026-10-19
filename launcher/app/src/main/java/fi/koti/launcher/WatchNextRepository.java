@@ -28,7 +28,7 @@ final class WatchNextRepository {
         final long id;
         final String packageName;
         final String title;
-        final String subtitle;     // "K2 J5 · Episode title" or null
+        final String seasonEpisode; // "K2, J5" or null
         final String imageUri;
         final Intent intent;
         final float progress;      // 0..1, or -1 when unknown
@@ -36,12 +36,12 @@ final class WatchNextRepository {
         final int watchNextType;   // CONTINUE, NEXT, NEW
         final int minutesLeft;     // -1 when unknown
 
-        Item(long id, String packageName, String title, String subtitle, String imageUri,
+        Item(long id, String packageName, String title, String seasonEpisode, String imageUri,
              Intent intent, float progress, long lastEngagement, int watchNextType, int minutesLeft) {
             this.id = id;
             this.packageName = packageName;
             this.title = title;
-            this.subtitle = subtitle;
+            this.seasonEpisode = seasonEpisode;
             this.imageUri = imageUri;
             this.intent = intent;
             this.progress = progress;
@@ -118,8 +118,16 @@ final class WatchNextRepository {
                 float progress = (pos > 0 && dur > 0) ? Math.min(1f, pos / (float) dur) : -1f;
                 if (progress >= FINISHED) continue;
                 int left = (pos > 0 && dur > pos) ? (int) Math.max(1, Math.round((dur - pos) / 60000.0)) : -1;
-                Item item = new Item(c.getLong(0), pkg, title.trim(),
-                        subtitle(c.getString(4), c.getString(5), c.getString(3)),
+                // Areena puts the episode code in the title ("K2, J16: Banaanit loukussa"):
+                // show the episode name as the title and the code beneath it.
+                String name = title.trim();
+                String code = seasonEpisode(c.getString(4), c.getString(5));
+                java.util.regex.Matcher m = EPISODE_IN_TITLE.matcher(name);
+                if (m.matches()) {
+                    if (code == null) code = "K" + m.group(1) + ", J" + m.group(2);
+                    name = m.group(3).trim();
+                }
+                Item item = new Item(c.getLong(0), pkg, name, code,
                         image, intent, progress, engaged, type, left);
                 if (hidden.contains(item.key())) continue;
                 all.add(item);
@@ -164,17 +172,14 @@ final class WatchNextRepository {
         return poster;
     }
 
-    private static String subtitle(String season, String episode, String episodeTitle) {
-        StringBuilder sb = new StringBuilder();
-        if (!TextUtils.isEmpty(season)) sb.append("K").append(season.trim());
-        if (!TextUtils.isEmpty(episode)) {
-            if (sb.length() > 0) sb.append(' ');
-            sb.append("J").append(episode.trim());
-        }
-        if (!TextUtils.isEmpty(episodeTitle)) {
-            if (sb.length() > 0) sb.append("  ·  ");
-            sb.append(episodeTitle.trim());
-        }
-        return sb.length() == 0 ? null : sb.toString();
+    private static final java.util.regex.Pattern EPISODE_IN_TITLE =
+            java.util.regex.Pattern.compile("^K(\\d+),\\s*J(\\d+):\\s*(.+)$");
+
+    /** "K2, J5" (Finnish season/episode, as Areena writes it), or null. */
+    private static String seasonEpisode(String season, String episode) {
+        boolean s = !TextUtils.isEmpty(season), e = !TextUtils.isEmpty(episode);
+        if (s && e) return "K" + season.trim() + ", J" + episode.trim();
+        if (e) return "J" + episode.trim();
+        return null;
     }
 }

@@ -4,5 +4,7 @@
     <item name="spring_scale_x" type="id" />
     <item name="spring_scale_y" type="id" />
     <item name="spring_translation_y" type="id" />
+    <item name="spring_translation_x" type="id" />
+    <item name="spring_z" type="id" />
     <item name="spring_other" type="id" />
 </resources>

@@ -137,6 +137,21 @@ another folder, pass it: `tools/push-wallpapers.sh ~/Pictures/tv`. With no photo
 installed, Koti falls back to a plain dusk gradient. Credits for the bundled set:
 `wallpapers/CREDITS.md` (Wikimedia Commons Featured Pictures, CC BY-SA / CC BY).
 
+### Bluetooth speaker
+
+Going to standby, the TV disconnects the Bluetooth speaker; on wake it makes exactly one
+reconnect attempt, and if the speaker is still waking up that attempt times out (which
+is why it used to take a second power-on). Koti now watches for wake-ups and boots: if the
+speaker you last used isn't connected after a few seconds, it retries at about 4, 9, 15,
+22, 32, 45, 60, 80, 105 and 135 seconds and stops as soon as it connects, or as soon as
+another speaker connects instead. It remembers whichever speaker you connected most
+recently (today the EDIFIER R2850DB). Logs: `tools/tv shell "logcat -d -s Koti.Speaker"`.
+To test it (briefly drops the speaker):
+
+```bash
+tools/tv shell "am start -n fi.koti.launcher/.MainActivity --ez speaker_test true"
+```
+
 ### Screensaver
 
 Koti's screensaver (the same photos with a large clock, a new photo every ten minutes,

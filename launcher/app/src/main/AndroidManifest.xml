@@ -5,11 +5,15 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- Read other apps' Watch Next rows from TvProvider. -->
     <uses-permission android:name="android.permission.READ_TV_LISTINGS" />
+    <!-- Reconnect the household's Bluetooth speaker after standby. -->
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
 
     <uses-feature android:name="android.software.leanback" android:required="false" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
 
     <application
+        android:name=".KotiApp"
         android:allowBackup="false"
         android:banner="@drawable/banner"
         android:icon="@drawable/ic_launcher"

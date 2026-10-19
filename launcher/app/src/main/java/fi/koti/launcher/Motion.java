@@ -76,6 +76,8 @@ final class Motion {
         if (prop == DynamicAnimation.SCALE_X) return R.id.spring_scale_x;
         if (prop == DynamicAnimation.SCALE_Y) return R.id.spring_scale_y;
         if (prop == DynamicAnimation.TRANSLATION_Y) return R.id.spring_translation_y;
+        if (prop == DynamicAnimation.TRANSLATION_X) return R.id.spring_translation_x;
+        if (prop == DynamicAnimation.Z) return R.id.spring_z;
         return R.id.spring_other;
     }
 

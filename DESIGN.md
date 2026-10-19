@@ -41,7 +41,7 @@ typography:
     fontSize: "12sp"
     fontWeight: 500
 rounded:
-  card: "12dp"
+  card: "8dp"
   capsule: "20dp"
   row: "24dp"
   panel: "30dp"
@@ -74,8 +74,8 @@ components:
     height: "90dp"
   continue-card:
     rounded: "{rounded.card}"
-    width: "148dp"
-    height: "83dp"
+    width: "156dp"
+    height: "88dp"
   apps-page:
     backgroundColor: "{colors.glass-solid}"
     rounded: "{rounded.panel}"
@@ -94,7 +94,7 @@ The screen is the household's apps and shows, nothing else. The backdrop is art 
 **Key Characteristics:**
 - Art-first: full-bleed app artwork under a deep bottom scrim; rows sit on the dark.
 - Glass without blur: tinted dark fill, a faint top wash, a bright top edge.
-- Focus = lift + scale + deeper shadow + brightness + specular sheen. No rings.
+- Focus = lift + scale + deeper shadow + a sheen that slides in. No rings, no dimming of the rest.
 - Labels under every card, always visible.
 
 ## Colors
@@ -127,7 +127,7 @@ Neutral: white type and dark glass; all colour comes from artwork.
 - **Headline** (700, 20sp): row headings ("Jatka katsomista").
 - **Title** (500, 18sp): sidebar and menu rows.
 - **Body** (600, 17sp): capsule time, panel greeting.
-- **Label** (600, 14sp): card titles.
+- **Label** (500, 14sp): card titles.
 - **Caption** (500, 12sp): card subtitles ("Seuraava jakso", "46 min jäljellä", app name).
 
 ## Layout
@@ -136,19 +136,19 @@ Neutral: white type and dark glass; all colour comes from artwork.
 - 28dp: sidebar capsule (home glyph + time), 40dp from the left.
 - 250dp: dock, five 160 x 90 dp banners, 18dp gaps, centred.
 - 362dp: "Jatka katsomista".
-- 392dp: cards 148 x 83 dp, 18dp gaps, title and subtitle beneath; the row peeks 48dp of the next card.
+- 396dp: cards 156 x 88 dp, 18dp gaps, title and subtitle beneath; the row peeks 48dp of the next card. A focused card still clears the heading by about 12dp.
 - Sidebar panel 250dp wide at (28, 22). Menus open upward from the tile or card they belong to.
 
 ## Elevation & Depth
 
-Tiles rest at 3dp (cards 2dp) and spring up 11 to 12dp with a 7dp lift when focused, so the shadow deepens. The sidebar panel sits at 24dp, the capsule at 6dp, list panels at 24dp over a 50% scrim.
+Tiles rest at 3dp (cards 2dp) and spring up 12dp with a 7dp lift (cards 4dp) when focused, so the shadow deepens. The theme raises Android's shadow strength (ambient 0.16, spot 0.42) so lifted cards visibly float. The sidebar panel sits at 24dp, the capsule at 6dp, list panels at 24dp over a 50% scrim.
 
 ### Named Rules
-**The Light Is the Focus Rule.** A focused card scales to 1.10, rises, gains shadow, loses its dim, and catches a specular sheen (white 22% at the top-left fading out by 40%). Its labels drop 4dp and brighten. No outlines.
+**The Light Is the Focus Rule.** Unfocused content stays at full brightness, as on tvOS. A focused card scales to 1.10, rises and gains shadow, and a specular sheen (white ~20% at the top-left, gone by 40%) slides in from outside the corner over 450 ms, like light catching it as it lifts. Its labels drop 4dp and brighten. Holding OK presses the card to ~95%. Pushing past a row end nudges the card 6dp that way and springs it back. No outlines. All of it lives in `FocusFx`.
 
 ## Shapes
 
-Cards 12dp. Capsule 20dp, menu rows 24dp (full capsule), panels 30dp. Card art is rendered at 116% of its resting size, so the focus zoom never upsamples on screen.
+Cards and app tiles 8dp (≈5% of their width, measured from the Apple TV app on this TV). Capsule 20dp, menu rows 24dp (full capsule), panels 30dp. Card art is rendered at 116% of its resting size, so the focus zoom never upsamples on screen.
 
 ## Components
 
@@ -159,7 +159,7 @@ Collapsed: a glass capsule with the home glyph and the time. Open (Left from a r
 The app's TV banner at the highest density it ships, 12dp corners. Hold OK (or Menu) to move or remove it.
 
 ### Continue card
-Watch Next artwork (the app icon on a plate until it loads), a white progress bar on a dark bottom fade. Below: the title (14sp semibold) and one fact: "Seuraava jakso", "Uusi jakso", "N min jäljellä", or the app name. Hold OK to hide a card.
+Watch Next artwork (the app icon on a plate until it loads), a white progress bar on a dark bottom fade, and an "Uusi" badge (dark rounded label, 11sp semibold) on new episodes. Below: the title (14sp medium) and one line: the episode code if known ("K2, J16", parsed out of Areena's titles), then "Seuraava jakso", "N min jäljellä" or the app name. Hold OK to hide a card.
 
 ### Panels
 Inputs and menus: 320dp list panels with a white capsule on focus. Sovellukset: an opaque full page with a five-column grid.

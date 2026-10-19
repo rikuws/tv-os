@@ -18,7 +18,7 @@
     <string name="cancel">Peruuta</string>
     <string name="nav_home">Koti</string>
     <string name="wn_next">Seuraava jakso</string>
-    <string name="wn_new">Uusi jakso</string>
+    <string name="wn_badge_new">Uusi</string>
     <string name="wn_left">%d min jäljellä</string>
     <string name="wn_hide">Piilota</string>
     <string name="greeting_morning">Hyvää huomenta</string>
