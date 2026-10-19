@@ -1,0 +1,4 @@
+#!/bin/bash
+# Wrapper: run tvadb.py with the project venv. Usage: tools/tv shell "cmd" | screenshot f.png | key UP DOWN | install x.apk
+DIR="$(cd "$(dirname "$0")/.." && pwd)"
+exec "$DIR/.venv/bin/python" "$DIR/tools/tvadb.py" "$@"

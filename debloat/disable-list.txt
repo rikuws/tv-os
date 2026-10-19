@@ -1,0 +1,66 @@
+# Packages disabled on the Sony BRAVIA 4K GB ATV3 (Android 9), 2026-10-19.
+# Format: package   # what it is
+# Apply with tools/disable.sh -f debloat/disable-list.txt, undo with tools/restore.sh.
+
+# --- Manufacturer telemetry / analytics / remote diagnostics
+tv.samba.ssm                              # Samba TV: ACR fingerprinting of what is on screen
+com.qterics.da.product                    # Qterics device agent (Sony remote support/telemetry)
+com.sony.dtv.da.service                   # Sony device agent service (remote support session provider)
+com.sony.dtv.sonybugreportsys             # Sony bug report collector
+com.sony.dtv.sonyloglevelsettingsys       # Sony log level settings (system)
+com.sony.dtv.sonyloglevelsettingvnd       # Sony log level settings (vendor)
+com.google.android.tv.bugreportsender     # Google bug report sender
+com.google.android.feedback               # Google feedback/crash reports
+
+# --- Manufacturer content and ad services
+com.sony.dtv.promos                       # Sony Promos (ad content, Sony Select sync)
+com.sony.dtv.sonyselect                   # Sony Select app promo + Netflix promo
+com.sony.dtv.discovery                    # Sony "Discover" content overlay
+com.sony.dtv.bivlinfo                     # BIVL internet video service list
+com.sony.dtv.smarthelp                    # Smart Help (Sony Select content channel)
+com.sony.dtv.tvlaunchercustomizer         # Sony customizer for the stock launcher rows/app order
+com.google.android.tvrecommendations      # Google recommendation rows service
+android.autoinstalls.config.sony.bravia   # Play auto-install of partner apps
+com.sony.dtv.youview                      # YouView (UK-only EPG/catch-up)
+com.youview.tv.servicehost                # YouView service host + activity reporting
+
+# --- Background services not needed (share/cast duplicates, printing)
+com.android.printspooler                  # Print spooler
+com.google.android.apps.mediashell        # Chromecast built-in            (user: not used)
+com.sony.dtv.dialservice                  # DIAL second-screen launching   (user: not used)
+screnmirroring.com                        # Screen mirroring launcher      (user: not used)
+com.sony.dtv.networkapp.wifidirect        # Wi-Fi Direct / Miracast        (user: not used)
+com.sonyericsson.dlna                     # DLNA renderer/server           (user: not used)
+com.sony.huey.dlna.module                 # DLNA module                    (user: not used)
+com.sony.huey.dlna.renderersettings       # DLNA renderer settings         (user: not used)
+com.google.android.katniss                # Google voice search/assistant  (user: not used)
+com.google.android.speech.pumpkin         # Offline voice actions          (user: not used)
+com.google.android.backdrop               # Ambient mode screensaver       (user: not used)
+
+# --- Preloaded apps (user: keep none)
+com.google.android.videos                 # Google TV / Play Movies & TV
+com.google.android.play.games             # Play Games
+com.google.android.music                  # Play Music (service shut down)
+com.sony.dtv.osat.music                   # Sony Music player
+com.vewd.core.integration.dia             # Internet Browser app (browser core kept for HbbTV)
+com.google.android.inputmethod.japanese   # Japanese keyboard
+
+# --- Streaming apps (user keeps: Apple TV, Yle Areena, MTV Katsomo, Netflix, HBO Max, YouTube)
+com.amazon.amazonvideo.livingroom         # Prime Video
+com.disney.disneyplus                     # Disney+
+com.viaplay.android                       # Viaplay
+com.thirdpresence.ruutu                   # Ruutu
+com.elisa.viihde.tv                       # Elisa Viihde
+com.discovery.dplay                       # discovery+
+com.cbs.ca                                # Paramount+
+com.google.android.youtube.tvmusic        # YouTube Music
+com.spotify.tv.android                    # Spotify
+tv.twitch.android.app                     # Twitch
+com.qello.qelloGTV                        # Qello Concerts
+fi.viafree.android                        # Viafree (service closed)
+com.hbo_android_tv                        # HBO Nordic (old app)
+com.hbo.hbonow                            # HBO Max 2024 app (old; current is com.wbd.stream)
+fi.mtv.svod                               # MTV Katsomo 2024 app (old; current is fi.mtvkatsomo)
+
+# The stock launcher (com.google.android.tvlauncher) is disabled separately, after the
+# custom launcher is installed and set as default home.

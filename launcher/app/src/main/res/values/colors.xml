@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="sky_top">#FF081127</color>
+    <color name="sky_mid">#FF15264A</color>
+    <color name="horizon">#FF5A76A3</color>
+    <color name="treeline">#FF060C19</color>
+    <color name="birch">#FFF4F1EA</color>
+    <color name="amber">#FFE8B87A</color>
+</resources>

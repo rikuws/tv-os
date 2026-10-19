@@ -1,0 +1,16 @@
+.venv/
+launcher/.gradle/
+launcher/build/
+launcher/app/build/
+launcher/local.properties
+launcher/.idea/
+shots/
+.impeccable/decision/
+.DS_Store
+# TV snapshot (settings, getprop, dumpsys: device identifiers). Kept locally only;
+# backup/disabled-by-tvos.txt (what restore.sh re-enables) stays tracked.
+backup/*/
+backup/LATEST
+# Design-review captures show the household's watch history; kept local.
+.impeccable/review/
+.impeccable/questions/

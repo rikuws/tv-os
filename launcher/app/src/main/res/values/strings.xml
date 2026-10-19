@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Koti</string>
+    <string name="dream_name">Koti</string>
+    <string name="action_apps">Sovellukset</string>
+    <string name="action_inputs">Tulot</string>
+    <string name="action_settings">Asetukset</string>
+    <string name="continue_watching">Jatka katsomista</string>
+    <string name="apps_title">Sovellukset</string>
+    <string name="apps_hint">Pidä OK pohjassa lisätäksesi sovelluksen telakkaan tai poistaaksesi sen.</string>
+    <string name="inputs_title">Tulot</string>
+    <string name="input_disconnected">Ei kytketty</string>
+    <string name="dock_title">Telakka</string>
+    <string name="dock_move_left">Siirrä vasemmalle</string>
+    <string name="dock_move_right">Siirrä oikealle</string>
+    <string name="dock_remove">Poista telakasta</string>
+    <string name="dock_add">Lisää telakkaan</string>
+    <string name="cancel">Peruuta</string>
+    <string name="nav_home">Koti</string>
+    <string name="wn_next">Seuraava jakso</string>
+    <string name="wn_new">Uusi jakso</string>
+    <string name="wn_left">%d min jäljellä</string>
+    <string name="wn_hide">Piilota</string>
+    <string name="greeting_morning">Hyvää huomenta</string>
+    <string name="greeting_day">Hyvää päivää</string>
+    <string name="greeting_evening">Hyvää iltaa</string>
+    <string name="greeting_night">Hyvää yötä</string>
+</resources>
