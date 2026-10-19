@@ -68,7 +68,7 @@ public class MainActivity extends Activity implements Sidebar.Listener {
     private static final float DIM_ROWMATE = 0f, DIM_DOCK_IDLE = 0f, DIM_POSTER_IDLE = 0f;
     private static final int CONTINUE_LIMIT = 12;
     /** Dock focus must rest this long before the backdrop changes art. */
-    private static final int ART_DELAY_MS = 220;
+    private static final int ART_DELAY_MS = 380;
 
     private BackdropView backdrop;
     private TextView continueHeading;
@@ -84,7 +84,7 @@ public class MainActivity extends Activity implements Sidebar.Listener {
     private ShelfRepository shelfRepo;
     private InputRepository inputRepo;
     private ImageLoader images;
-    private final ExecutorService io = Executors.newSingleThreadExecutor();
+    private final ExecutorService io = Workers.pool("koti-io", 1);
     private final Handler main = new Handler(Looper.getMainLooper());
 
     private Map<String, AppEntry> apps = new java.util.LinkedHashMap<>();
@@ -104,6 +104,9 @@ public class MainActivity extends Activity implements Sidebar.Listener {
     protected void onCreate(Bundle state) {
         super.onCreate(state);
         setContentView(R.layout.activity_main);
+        // The backdrop paints every pixel opaquely: drop the window background so the GPU
+        // doesn't fill the screen once more underneath it every frame.
+        getWindow().setBackgroundDrawable(null);
         float d = getResources().getDisplayMetrics().density;
         tileW = Math.round(160 * d);
         tileH = Math.round(90 * d);
@@ -163,6 +166,7 @@ public class MainActivity extends Activity implements Sidebar.Listener {
     protected void onResume() {
         super.onResume();
         resumed = true;
+        Motion.refresh(this);
         IntentFilter time = new IntentFilter(Intent.ACTION_TIME_TICK);
         time.addAction(Intent.ACTION_TIME_CHANGED);
         time.addAction(Intent.ACTION_TIMEZONE_CHANGED);
@@ -279,6 +283,7 @@ public class MainActivity extends Activity implements Sidebar.Listener {
             runOnUiThread(() -> {
                 shelves = loaded;
                 artPackage = null;      // art may now exist for the app that showed a photo
+                prefetchDockArt();
                 AppEntry focused = focusedDockApp();
                 showArtFor(focused != null ? focused : (dockApps.isEmpty() ? null : dockApps.get(lastIndex[ROW_DOCK])));
             });
@@ -381,7 +386,32 @@ public class MainActivity extends Activity implements Sidebar.Listener {
         if (!pkg.equals(artPackage)) return;              // focus moved on meanwhile
         if (bitmap != null) backdrop.showArt(uri, bitmap);
         else backdrop.showPhoto();
-        if (more && resumed && pkg.equals(focusedDockPackage())) main.postDelayed(carousel, CAROUSEL_MS);
+        if (more && resumed && pkg.equals(focusedDockPackage())) {
+            main.postDelayed(carousel, CAROUSEL_MS);
+            // Have the next image decoded, composed and on the GPU before its turn, but only
+            // once this one has settled (not while the user is still moving across the dock).
+            main.postDelayed(prefetchNext, CAROUSEL_MS - 4_000);
+        }
+    }
+
+    private final Runnable prefetchNext = () -> {
+        AppEntry app = focusedDockApp();
+        if (app == null || !app.packageName.equals(artPackage)) return;
+        List<ArtRef> list = artFor(app.packageName);
+        if (list.size() > 1) prefetch(list.get((artIndex + 1) % list.size()));
+    };
+
+    /** Decode + compose art into the backdrop's cache without showing it. */
+    private void prefetch(ArtRef art) {
+        images.loadArt(art.url, screenW, (uri, b) -> { if (b != null) backdrop.prepareArt(uri, b); });
+    }
+
+    /** Every dock app's first backdrop, ready before focus lands on it. */
+    private void prefetchDockArt() {
+        for (AppEntry app : dockApps) {
+            List<ArtRef> list = artFor(app.packageName);
+            if (!list.isEmpty()) prefetch(list.get(0));
+        }
     }
 
     private String focusedDockPackage() {
@@ -391,6 +421,7 @@ public class MainActivity extends Activity implements Sidebar.Listener {
 
     private void stopCarousel() {
         main.removeCallbacks(carousel);
+        main.removeCallbacks(prefetchNext);
     }
 
     // ---------------------------------------------------------------- dock
@@ -425,6 +456,7 @@ public class MainActivity extends Activity implements Sidebar.Listener {
         applyDims();
         if (firstFocusPending && dock.getChildCount() > 0) {
             firstFocusPending = false;
+            reportFullyDrawn();     // dock on screen: the start-up metric that matters
             focusRow = ROW_DOCK;
             dock.post(() -> focusRow(ROW_DOCK, 0));
         } else if (hadFocus || (focusRow == ROW_DOCK && !sidebar.isOpen())) {

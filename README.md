@@ -13,6 +13,7 @@ tools/restore.sh          re-enable what was disabled; give home back to the sto
 tools/build-install.sh    build Koti, install it, grant Watch Next access (--set-home)
 tools/push-wallpapers.sh  sync wallpapers/ to the TV
 tools/disable.sh          disable packages one pm call at a time, logging them for restore
+tools/stress.sh           stress test: real remote key presses, frame cadence, start-up, memory
 debloat/disable-list.txt  what was disabled and why, by category
 backup/<date>/            package lists, getprop, all settings, default home before changes
 backup/disabled-by-tvos.txt  what is disabled right now (restore.sh reads this)
@@ -93,7 +94,9 @@ a landscape photo. Images
 are fetched in backdrop size where the CDN allows (Areena, Apple, YouTube) and cached on
 disk. The carousel interval is `CAROUSEL_MS` in `MainActivity.java`.
 
-**Build and install** (JDK 17 and the Android SDK; see `tools/build-install.sh`):
+**Build and install** (JDK 17 and the Android SDK; see `tools/build-install.sh`). It
+builds the release variant (not debuggable) and compiles it ahead of time on the TV;
+add `--debug` for a debuggable build:
 
 ```bash
 tools/build-install.sh
@@ -132,7 +135,8 @@ add, remove or replace JPEGs (ideally 1920×1080, calm and not too bright), then
 tools/push-wallpapers.sh
 ```
 
-Only changed files are sent, and photos you deleted are removed from the TV. To use
+Only changed files are sent, and photos you deleted are removed from the TV (through a
+small provider in Koti that only the ADB shell can use). To use
 another folder, pass it: `tools/push-wallpapers.sh ~/Pictures/tv`. With no photos
 installed, Koti falls back to a plain dusk gradient. Credits for the bundled set:
 `wallpapers/CREDITS.md` (Wikimedia Commons Featured Pictures, CC BY-SA / CC BY).
@@ -178,6 +182,43 @@ tools/tv shell "am start -n fi.koti.launcher/.MainActivity --ez unhide_all true"
 ```
 
 Koti needs `READ_TV_LISTINGS`, which `build-install.sh` grants.
+
+## Performance
+
+Hardware: MediaTek MT5891, 4x Cortex-A53 at a fixed 1.0 GHz (governor already
+`performance`), Mali-T860 GPU, 1080p60, and a double-buffered compositor, so any frame the
+GPU can't finish within a vsync halves the frame rate. GPU acceleration is on (HWUI
+Skia/OpenGL); the limit is GPU memory bandwidth, not our code (under 1 ms of UI work per
+frame). What Koti does about it:
+
+- **Release build, AOT-compiled** (`cmd package compile -m speed`): cold start to first
+  frame ~0.4-0.6 s instead of ~1.3 s; dock drawn in ~0.6-0.7 s instead of ~1.7 s.
+- **Stays resident** (a foreground service): Home is a warm start (~10 ms) even after
+  Netflix and co., and the Bluetooth speaker watcher is always running. Costs ~130 MB.
+- **Backdrop composed once**: art and both scrims are painted into one opaque bitmap off
+  the main thread, uploaded to the GPU ahead of time (`prepareToDraw`), so a frame draws
+  one full-screen texture. HARDWARE bitmaps were measured slower on this Mali and not used.
+- **Preloading**: every dock app's first backdrop is decoded and composed at start-up and
+  on each return home; the carousel's next image is prepared 4 s before its turn.
+- **Background work at background priority**, so image decoding never competes with the
+  UI and render threads; the art crossfade waits for the focus spring to settle.
+
+`tools/stress.sh` injects real remote key events and reports, per segment, the share of
+frames that reached the screen on the very next vsync, plus cold start and memory (about
+two minutes; leave the remote alone while it runs):
+
+```bash
+tools/stress.sh
+```
+
+
+| Segment | before | after |
+|---|---|---|
+| Dock, fast clicks / mashing | 85% / 86% | 91-93% / 99-100% |
+| Continue row, fast clicks / mashing | 99% / 99% | 100% / 100% |
+| Sidebar, apps page | 96% / 96% | 97% / 97% |
+| Idle art crossfade | ~90-94% | ~90-94% (GPU bandwidth limit) |
+| Cold start, first frame | 1.37 s | 0.37-0.41 s |
 
 ## When you're done
 

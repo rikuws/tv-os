@@ -89,7 +89,7 @@ components:
 
 Koti speaks the Apple TV app's language (tvOS 26): content artwork fills the screen, a floating glass sidebar holds navigation, cards lift into light when focused, and type is white and confident. The owner pinned this direction with a photo of the Apple TV app running on this TV. It replaced two earlier worlds (a procedural blue-hour lake, then rotating landscape photos); that photo set survives as the fallback backdrop and the screensaver.
 
-The screen is the household's apps and shows, nothing else. The backdrop is art for the household's own shows in the focused dock app (its Watch Next artwork, newest first), then that app's featured titles (Android TV preview channels, the platform's top shelf); apps that publish neither fall back to a landscape photo. A slow carousel (10 s, 700 ms crossfade) runs only while a dock app holds focus, like the Apple TV app's hero. No ads, no recommendation rows, no other motion unless the remote moves.
+The screen is the household's apps and shows, nothing else. The backdrop is art for the household's own shows in the focused dock app (its Watch Next artwork, newest first), then that app's featured titles (Android TV preview channels, the platform's top shelf); apps that publish neither fall back to a landscape photo. Art changes once dock focus has rested 380 ms (after the focus spring settles). A slow carousel (10 s, 700 ms crossfade) runs only while a dock app holds focus, like the Apple TV app's hero. No ads, no recommendation rows, no other motion unless the remote moves.
 
 **Key Characteristics:**
 - Art-first: full-bleed app artwork under a deep bottom scrim; rows sit on the dark.

@@ -33,13 +33,13 @@ final class ImageLoader {
 
     private final Context context;
     private final File diskDir;
-    private final ExecutorService pool = Executors.newFixedThreadPool(2);
+    private final ExecutorService pool = Workers.pool("koti-images", 2);
     private final Handler main = new Handler(Looper.getMainLooper());
     private final LruCache<String, Bitmap> mem = new LruCache<String, Bitmap>(MEM_BYTES) {
         @Override protected int sizeOf(String key, Bitmap b) { return b.getByteCount(); }
     };
-    /** Backdrop art: full-screen ARGB (no banding in dark gradients), at most ~3 kept. */
-    private final LruCache<String, Bitmap> art = new LruCache<String, Bitmap>(25 * 1024 * 1024) {
+    /** Backdrop source art: full-screen ARGB, kept only until composed (~2 images). */
+    private final LruCache<String, Bitmap> art = new LruCache<String, Bitmap>(17 * 1024 * 1024) {
         @Override protected int sizeOf(String key, Bitmap b) { return b.getByteCount(); }
     };
 
@@ -116,7 +116,9 @@ final class ImageLoader {
             o = new BitmapFactory.Options();
             o.inSampleSize = sample;
             o.inPreferredConfig = Bitmap.Config.RGB_565;
-            return BitmapFactory.decodeByteArray(data, 0, data.length, o);
+            Bitmap b = BitmapFactory.decodeByteArray(data, 0, data.length, o);
+            if (b != null) b.prepareToDraw();     // texture upload ahead of the first frame
+            return b;
         } catch (Throwable t) {
             Log.w(TAG, "decode failed " + uri + ": " + t);
             return null;

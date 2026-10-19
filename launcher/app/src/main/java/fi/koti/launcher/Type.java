@@ -28,7 +28,7 @@ final class Type {
         return get(c, weight, 32, DISPLAY);
     }
 
-    private static Typeface get(Context c, int weight, int opsz, Typeface[] cache) {
+    private static synchronized Typeface get(Context c, int weight, int opsz, Typeface[] cache) {
         int i = weight / 100;
         if (cache[i] == null) {
             try {

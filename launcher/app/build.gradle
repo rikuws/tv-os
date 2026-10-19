@@ -18,6 +18,12 @@ android {
         debug {
             minifyEnabled false
         }
+        // Not debuggable, so ART compiles it ahead of time ("speed") instead of running a
+        // debuggable JIT. Signed with the debug key so it installs over the debug build.
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.debug
+        }
     }
 
     compileOptions {

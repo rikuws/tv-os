@@ -11,8 +11,10 @@ SRC="${1:-$DIR/wallpapers}"
 PKG=fi.koti.launcher
 TMP=/data/local/tmp/koti-wall
 
-"$TV" shell "run-as $PKG sh -c 'mkdir -p files/wallpapers && chmod 700 files/wallpapers'"
-remote=$("$TV" shell "run-as $PKG sh -c 'cd files/wallpapers && md5sum * 2>/dev/null'" || true)
+# Koti's WallpaperProvider (shell-only) manages its private photo folder; works on the
+# release build, where run-as is unavailable.
+URI=content://$PKG.files/wallpapers
+remote=$("$TV" shell "content query --uri $URI" | sed -n 's/.*name=\([^,]*\), md5=\([0-9a-f]*\).*/\2  \1/p' || true)
 "$TV" shell "mkdir -p $TMP && chmod 755 $TMP"
 
 local_names=()
@@ -26,7 +28,7 @@ for f in "$SRC"/*.jpg "$SRC"/*.jpeg "$SRC"/*.png "$SRC"/*.webp; do
     continue
   fi
   "$TV" push "$f" "$TMP/$name" >/dev/null
-  "$TV" shell "chmod 644 '$TMP/$name' && run-as $PKG cp '$TMP/$name' 'files/wallpapers/$name' && rm '$TMP/$name'"
+  "$TV" shell "content write --uri $URI/$name < '$TMP/$name' && rm '$TMP/$name'"
   echo "pushed     $name"
 done
 
@@ -35,7 +37,7 @@ for r in $(echo "$remote" | awk '{print $2}'); do
   keep=0
   for l in "${local_names[@]:-}"; do [ "$l" = "$r" ] && keep=1; done
   if [ $keep -eq 0 ]; then
-    "$TV" shell "run-as $PKG rm -f 'files/wallpapers/$r'"
+    "$TV" shell "content delete --uri $URI/$r" >/dev/null
     echo "removed    $r"
   fi
 done

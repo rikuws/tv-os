@@ -16,7 +16,8 @@ import androidx.dynamicanimation.animation.SpringForce;
  *   focus lands on a tile   tile rises LIFT dp, grows to FOCUS_SCALE and gains elevation
  *                           (deeper shadow) on one spring family; the un-dim fades up
  *                           over LIGHT_MS; a specular sheen fades in
- *   dock focus rests 220 ms  backdrop crossfades to that app's featured art
+ *   dock focus rests 380 ms  backdrop crossfades to that app's art (after the focus spring
+ *                           has mostly settled: the two overlapping overloads this GPU)
  *   sidebar opens           panel grows from its corner (0.9 -> 1) as content dims
  *   focus leaves            same springs retarget back to rest from wherever they are
  *   row scroll              DecelerateInterpolator over SCROLL_MS
@@ -45,8 +46,16 @@ final class Motion {
 
     private Motion() {}
 
+    private static Boolean reducedCache;
+
+    /** Animator scale 0 (developer options). Cached; {@link #refresh} re-reads it. */
     static boolean reduced(Context c) {
-        return Settings.Global.getFloat(c.getContentResolver(),
+        if (reducedCache == null) refresh(c);
+        return reducedCache;
+    }
+
+    static void refresh(Context c) {
+        reducedCache = Settings.Global.getFloat(c.getContentResolver(),
                 Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f;
     }
 

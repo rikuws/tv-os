@@ -96,6 +96,7 @@ final class DockTileView extends View implements FocusFx.Host {
         } else {
             drawIconPlate(bc, w, h);
         }
+        banner.prepareToDraw();     // texture upload ahead of the first frame
         BitmapShader shader = new BitmapShader(banner, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
         shaderMatrix.setScale(w / (float) bw, h / (float) bh);
         shader.setLocalMatrix(shaderMatrix);
